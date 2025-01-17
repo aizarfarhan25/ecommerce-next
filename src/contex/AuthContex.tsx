@@ -1,91 +1,99 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import axiosInstance from "@/utils/axiosInstance";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import axiosInstance from "@/utils/axiosInstance";
+import Cookies from "js-cookie";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
+  user: any | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Check authentication status on mount
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-
-    console.log("Token di localStorage:", token);
-
+    const token = Cookies.get("token");
     if (token) {
       setIsAuthenticated(true);
+      fetchUserData(token);
     } else {
-      setIsAuthenticated(false);
+      setLoading(false);
     }
-
-    setIsLoading(false);
   }, []);
+
+  const fetchUserData = async (token: string) => {
+    try {
+      axiosInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${token}`;
+      const response = await axiosInstance.get("/auth/profile");
+      setUser(response.data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      handleLogout();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axiosInstance.post("/auth/login", { email, password });
-      const { access_token, refresh_token } = response.data;
+      const response = await axiosInstance.post("/auth/login", {
+        email,
+        password,
+      });
+      const { access_token } = response.data;
 
-      if (access_token && refresh_token) {
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
-        setIsAuthenticated(true);
-        router.push("/");
-      } else {
-        throw new Error("Login failed: Invalid login credentials");
-      }
+      // Set token in cookie with httpOnly flag
+      Cookies.set("token", access_token, {
+        expires: 7, // 7 days
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
+      // Set axios default header
+      axiosInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${access_token}`;
+
+      setIsAuthenticated(true);
+      await fetchUserData(access_token);
     } catch (error: any) {
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            throw new Error("Incorrect email or password");
-          case 404:
-            throw new Error("Account not found");
-          case 429:
-            throw new Error("Too many login attempts. Please try again later");
-          case 500:
-            throw new Error("Server error. Please try again in a moment");
-          default:
-            throw new Error(
-              "Login failed: Please check your internet connection and try again"
-            );
-        }
-      }
-      throw new Error("Login failed: An error occurred. Please try again");
+      throw new Error(error.response?.data?.message || "Login failed");
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("cart");
+  const handleLogout = () => {
+    Cookies.remove("token");
+    delete axiosInstance.defaults.headers.common["Authorization"];
     setIsAuthenticated(false);
-    router.push("/login");
+    setUser(null);
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  const value = {
+    isAuthenticated,
+    user,
+    login,
+    logout: handleLogout,
+    isLoading: loading,
+  };
 
-export const useAuth = (): AuthContextType => {
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
-
+}

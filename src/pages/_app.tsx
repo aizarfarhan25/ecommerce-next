@@ -1,10 +1,9 @@
-import 'react-toastify/dist/ReactToastify.css'; 
-import { AppProps } from 'next/app';
-import { AuthProvider } from '@/contex/AuthContex';
-import { CartProvider } from '@/contex/CartContex';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import '@/styles/globals.css';
+import "react-toastify/dist/ReactToastify.css";
+import { AppProps } from "next/app";
+import { AuthProvider } from "@/contex/AuthContex";
+import { CartProvider } from "@/contex/CartContex";
+import { ToastContainer } from "react-toastify";
+import "@/styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -24,4 +23,3 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 export default MyApp;
-

@@ -1,62 +1,46 @@
-import { useEffect, useState } from "react";
-import axiosInstance from "@/utils/axiosInstance";
+import { useState } from "react";
+import { useProducts, Product } from "@/hooks/useProducts";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProductList from "@/components/ProductList";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
-interface Product {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  images: string[];
-  category: { id: number; name: string };
-}
+import axiosInstance from "@/utils/axiosInstance";
 
 interface Category {
   id: number;
   name: string;
 }
 
-const HomePage = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+export async function getServerSideProps() {
+  try {
+    const categoriesResponse = await axiosInstance.get("/categories");
+
+    return {
+      props: {
+        initialCategories: categoriesResponse.data,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return {
+      props: {
+        initialCategories: [],
+      },
+    };
+  }
+}
+
+const HomePage = ({ initialCategories }: { initialCategories: Category[] }) => {
+  const [categories] = useState<Category[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const response = await axiosInstance.get("/categories");
-      setCategories(response.data);
-    };
+  const { products, isLoading } = useProducts(selectedCategory);
 
-    const fetchProducts = async () => {
-      const response = await axiosInstance.get("/products");
-      setProducts(response.data);
-      setFilteredProducts(response.data);
-      setLoading(false);
-    };
-
-    fetchCategories();
-    fetchProducts();
-  }, []);
-
-  const handleCategorySelect = async (categoryId: number | null) => {
+  const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
-
-    if (categoryId) {
-      const response = await axiosInstance.get(
-        `/products/?categoryId=${categoryId}`
-      );
-      setFilteredProducts(response.data);
-    } else {
-      setFilteredProducts(products);
-    }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div>
         <Header />
@@ -96,7 +80,7 @@ const HomePage = () => {
           selectedCategory={selectedCategory}
           onCategorySelect={handleCategorySelect}
         />
-        <ProductList products={filteredProducts} />
+        <ProductList products={products || []} />
       </div>
       <Footer />
     </div>

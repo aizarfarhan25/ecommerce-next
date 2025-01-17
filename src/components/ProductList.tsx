@@ -4,6 +4,7 @@ import { useCart } from "@/contex/CartContex";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
+import { useAuth } from "@/contex/AuthContex";
 
 interface Product {
   id: number;
@@ -22,23 +23,24 @@ interface Props {
 
 const ProductList: React.FC<Props> = ({ products }) => {
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
 
   const handleAddToCart = (product: Product) => {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
+    if (!isAuthenticated) {
+      // toast.error("Please login to add items to cart");
       router.push("/login");
-    } else {
-      addToCart({
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        image: product.images[0],
-        quantity: 1,
-      });
-      toast.success("Product added to cart");
+      return;
     }
+
+    addToCart({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      image: product.images[0],
+      quantity: 1,
+    });
+    toast.success("Product added to cart");
   };
 
   return (
@@ -74,10 +76,10 @@ const ProductList: React.FC<Props> = ({ products }) => {
                 e.preventDefault();
                 handleAddToCart(product);
               }}
-              className="text-sm bg-black text-white py-2 md:px-2 gap-2 p-2 lg:px-4 rounded-md  transition duration-200 flex items-center justify-center"
+              className="text-sm bg-black text-white py-2 md:px-2 gap-2 p-2 lg:px-4 rounded-md transition duration-200 flex items-center justify-center"
             >
               <MdOutlineShoppingCartCheckout />
-              Add to Cart
+              {isAuthenticated ? "Add to Cart" : "Login to Add"}
             </button>
             <div>
               <p className="text-xs md:text-sm">Price</p>
@@ -93,4 +95,3 @@ const ProductList: React.FC<Props> = ({ products }) => {
 };
 
 export default ProductList;
-

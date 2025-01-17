@@ -6,13 +6,8 @@ import { useRouter } from "next/router";
 import Header from "@/components/Header";
 
 const CartPage = () => {
-  const {
-    cart,
-    addToCart,
-    decreaseQuantity,
-    removeFromCart,
-    buyCart,
-  } = useCart();
+  const { cart, addToCart, decreaseQuantity, removeFromCart, buyCart } =
+    useCart();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
@@ -106,5 +101,21 @@ const CartPage = () => {
   );
 };
 
-export default CartPage;
+export async function getServerSideProps({ req }: { req: any }) {
+  const token = req.cookies.token; // Check authentication token from cookies
 
+  if (!token) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
+
+export default CartPage;
