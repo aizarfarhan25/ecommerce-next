@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -8,7 +8,8 @@ import { useCart } from "@/contex/CartContex";
 import { CartItem } from "@/contex/CartContex";
 import { useAuth } from "@/contex/AuthContex";
 import { toast } from "react-toastify";
-import { useParams } from "next/navigation";
+import axiosInstance from "@/utils/axiosInstance";
+// import { useParams } from "next/navigation";
 
 interface Product {
   id: number;
@@ -21,7 +22,7 @@ interface Product {
 
 const ProductDetail = () => {
   const router = useRouter();
-//   const params = useParams();
+  //   const params = useParams();
   const id = router.query.id;
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -35,9 +36,7 @@ const ProductDetail = () => {
       if (!id) return;
 
       try {
-        const response = await axios.get(
-          `https://api.escuelajs.co/api/v1/products/${id}`
-        );
+        const response = await axiosInstance.get(`/products/${id}`);
         setProduct(response.data);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -47,7 +46,7 @@ const ProductDetail = () => {
     };
 
     fetchProduct();
-  }, []);
+  }, [id]);
 
   const increment = () => {
     setQuantity((prev) => prev + 1); // tambah jumlah produk

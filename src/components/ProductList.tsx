@@ -74,13 +74,13 @@ const ProductList: React.FC<Props> = ({ products }) => {
                 e.preventDefault();
                 handleAddToCart(product);
               }}
-              className="text-sm bg-black text-white py-2 md:px-2 gap-2 lg:px-4 rounded-md  transition duration-200 flex items-center justify-center"
+              className="text-sm bg-black text-white py-2 md:px-2 gap-2 p-2 lg:px-4 rounded-md  transition duration-200 flex items-center justify-center"
             >
               <MdOutlineShoppingCartCheckout />
               Add to Cart
             </button>
             <div>
-              <p className="text-xs ">Price</p>
+              <p className="text-xs md:text-sm">Price</p>
               <p className="text-gray-600 text-sm font-semibold">
                 ${product.price.toFixed(2)}
               </p>

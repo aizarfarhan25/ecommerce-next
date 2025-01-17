@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProductList from "@/components/ProductList";
 import Header from "@/components/Header";
@@ -28,16 +28,12 @@ const HomePage = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await axios.get(
-        "https://api.escuelajs.co/api/v1/categories"
-      );
+      const response = await axiosInstance.get("/categories");
       setCategories(response.data);
     };
 
     const fetchProducts = async () => {
-      const response = await axios.get(
-        "https://api.escuelajs.co/api/v1/products"
-      );
+      const response = await axiosInstance.get("/products");
       setProducts(response.data);
       setFilteredProducts(response.data);
       setLoading(false);
@@ -51,8 +47,8 @@ const HomePage = () => {
     setSelectedCategory(categoryId);
 
     if (categoryId) {
-      const response = await axios.get(
-        `https://api.escuelajs.co/api/v1/products/?categoryId=${categoryId}`
+      const response = await axiosInstance.get(
+        `/products/?categoryId=${categoryId}`
       );
       setFilteredProducts(response.data);
     } else {
@@ -68,14 +64,20 @@ const HomePage = () => {
           <div className="w-full lg:w-1/4 p-4">
             <div className="bg-gray-300 h-12 mb-4 animate-pulse"></div>
             {[...Array(5)].map((_, index) => (
-              <div key={index} className="bg-gray-300 h-8 mb-4 animate-pulse"></div>
+              <div
+                key={index}
+                className="bg-gray-300 h-8 mb-4 animate-pulse"
+              ></div>
             ))}
           </div>
-          
+
           <div className="w-full lg:w-3/4 p-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, index) => (
-                <div key={index} className="bg-gray-300 h-64 animate-pulse rounded-md"></div>
+                <div
+                  key={index}
+                  className="bg-gray-300 h-64 animate-pulse rounded-md"
+                ></div>
               ))}
             </div>
           </div>
@@ -102,4 +104,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
