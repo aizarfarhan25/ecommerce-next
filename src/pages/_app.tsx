@@ -11,13 +11,13 @@ function MyApp({ Component, pageProps }: AppProps) {
     <AuthProvider>
       <CartProvider>
         <Component {...pageProps} />
-        {/* <ToastContainer
+        <ToastContainer
           position="top-right"
           autoClose={3000}
           hideProgressBar={false}
           closeOnClick
           pauseOnHover
-        /> */}
+        />
       </CartProvider>
     </AuthProvider>
   );
