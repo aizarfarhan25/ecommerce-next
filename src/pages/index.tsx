@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useProducts, Product } from "@/hooks/useProducts";
+import { useProducts } from "@/hooks/useProducts";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProductList from "@/components/ProductList";
 import Header from "@/components/Header";
