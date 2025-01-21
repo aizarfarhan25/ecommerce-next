@@ -47,7 +47,7 @@ const ProductList: React.FC<Props> = ({ products }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mx-auto w-[80%]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-[90%] md:w-[85%] lg:w-[80%]">
       {products.map((product) => (
         <Link
           href={`/product/${product.id}`}
@@ -73,19 +73,23 @@ const ProductList: React.FC<Props> = ({ products }) => {
             </span>
           </div>
 
-          <div className="flex flex-row justify-between items-center mt-4">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                handleAddToCart(product);
-              }}
-              className="text-sm bg-black text-white py-2 md:px-2 gap-2 p-2 lg:px-4 rounded-md transition duration-200 flex items-center justify-center"
-            >
-              <MdOutlineShoppingCartCheckout />
-              {isAuthenticated ? "Add to Cart" : "Login to Add"}
-            </button>
-            <div>
-              <p className="text-xs md:text-sm">Price</p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-4 gap-2">
+            <div className="order-2 md:order-1 w-full md:w-auto">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleAddToCart(product);
+                }}
+                className="w-full md:w-auto text-sm bg-black text-white py-2 px-4 rounded-md transition duration-200 flex items-center justify-center gap-2"
+              >
+                <MdOutlineShoppingCartCheckout />
+                <span className="whitespace-nowrap">
+                  {isAuthenticated ? "Add to Cart" : "Login to Add"}
+                </span>
+              </button>
+            </div>
+            <div className="order-1 md:order-2 w-full md:w-auto text-right">
+              <p className="text-xs">Price</p>
               <p className="text-gray-600 text-sm font-semibold">
                 ${product.price.toFixed(2)}
               </p>

@@ -26,9 +26,7 @@ const CategoryFilter: React.FC<Props> = ({
   ];
 
   const cleanCategoryName = (name: string) => {
-    return name
-      .trim()
-      .replace(/clothessss/i, "clothes")
+    return name.trim().replace(/clothessss/i, "clothes");
   };
 
   const filteredCategories = categories.filter((category) => {
@@ -109,29 +107,31 @@ const CategoryFilter: React.FC<Props> = ({
             <BiCategory size={20} />
             <h2 className="text-lg font-semibold">Category</h2>
           </div>
-          <button
-            onClick={() => handleCategorySelect(null)}
-            className={`px-4 py-2 block text-left ${
-              selectedCategory === null
-                ? "text-black font-bold border-l-4 border-black"
-                : "text-gray-700 hover:bg-gray-200 hover:border-l-4 hover:border-black"
-            } transition-all duration-200`}
-          >
-            All
-          </button>
-          {filteredCategories.map((category) => (
+          <div className="w-full max-w-[200px]">
             <button
-              key={category.id}
-              onClick={() => handleCategorySelect(category.id)}
-              className={`px-4 py-2 block text-left ${
-                selectedCategory === category.id
-                  ? "text-black font-bold border-l-4 border-black"
-                  : "text-gray-700 hover:bg-gray-200 hover:border-l-4 hover:border-black"
+              onClick={() => handleCategorySelect(null)}
+              className={`w-full px-4 py-2 text-left border-l-4 ${
+                selectedCategory === null
+                  ? "text-black font-bold border-black"
+                  : "text-gray-700 hover:bg-gray-200 border-transparent hover:border-black"
               } transition-all duration-200`}
             >
-              {cleanCategoryName(category.name)}
+              All
             </button>
-          ))}
+            {filteredCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategorySelect(category.id)}
+                className={`w-full px-4 py-2 text-left border-l-4 ${
+                  selectedCategory === category.id
+                    ? "text-black font-bold border-black"
+                    : "text-gray-700 hover:bg-gray-200 border-transparent hover:border-black"
+                } transition-all duration-200`}
+              >
+                {cleanCategoryName(category.name)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -139,4 +139,3 @@ const CategoryFilter: React.FC<Props> = ({
 };
 
 export default CategoryFilter;
-
