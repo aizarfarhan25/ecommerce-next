@@ -1,17 +1,42 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useCart } from "@/contex/CartContex";
 import { useAuth } from "@/contex/AuthContex";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Header from "@/components/Header";
+import { toast } from "react-toastify";
 
 const CartPage = () => {
-  const { cart, addToCart, decreaseQuantity, removeFromCart, buyCart } =
-    useCart();
+  const { cart, total, setQuantity, removeFromCart, clearCart } = useCart();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const handleQuantityChange = (productId: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    setQuantity(productId, newQuantity);
+  };
+
+  const handleRemoveItem = (productId: number) => {
+    removeFromCart(productId);
+    toast.success("Item removed from cart");
+  };
+
+  const handlePurchase = async () => {
+    try {
+      setIsProcessing(true);
+      // Simulasi proses pembelian
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      clearCart(); // Kosongkan cart setelah pembelian berhasil
+      toast.success("Your purchase is successful");
+      router.push("/");
+    } catch (error) {
+      toast.error("Failed to process purchase");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -23,80 +48,97 @@ const CartPage = () => {
     return <div>Loading...</div>;
   }
 
-  return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <Header />
-
-      <main className="flex flex-1 flex-col items-center p-4">
-        <h1 className="text-2xl font-bold mb-4">Shopping Cart</h1>
-
-        {cart.length === 0 ? (
+  if (cart.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-2xl font-bold mb-8">Shopping Cart</h1>
           <div className="text-center">
-            <p className="text-gray-500">Your cart is empty.</p>
-            <Link
-              href="/"
-              className="mt-4 inline-block bg-gray-950 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
+            <p className="text-gray-500 mb-6">Your cart is empty</p>
+            <button
+              onClick={() => router.push("/")}
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 transition-colors"
             >
-              Shop Now
-            </Link>
+              Continue Shopping
+            </button>
           </div>
-        ) : (
-          <div className="w-full max-w-2xl">
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between mb-4 border p-4 rounded"
-              >
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-2xl font-bold mb-8">Shopping Cart</h1>
+        <div className="bg-white shadow-sm rounded-lg divide-y divide-gray-200">
+          {cart.map((item) => (
+            <div key={item.id} className="p-6 flex items-center">
+              <div className="flex-shrink-0 w-24 h-24 bg-gray-100 rounded-md overflow-hidden">
                 <img
-                  src={item.image || "/placeholder.svg"}
+                  src={item.image || "/placeholder-image.jpg"}
                   alt={item.title}
-                  className="w-20 h-20 object-cover mr-4"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/placeholder-image.jpg";
+                  }}
                 />
-
-                <div className="flex-1">
-                  <h2 className="font-bold">{item.title}</h2>
-                  <p>${item.price.toFixed(2)}</p>
-
-                  <div className="flex items-center mt-2">
-                    <button
-                      onClick={() => decreaseQuantity(item.id)}
-                      className="bg-gray-300 text-black px-2 py-1 rounded hover:bg-gray-400 transition"
-                    >
-                      -
-                    </button>
-                    <span className="mx-2">{item.quantity}</span>
-                    <button
-                      onClick={() => addToCart(item, 1)}
-                      className="bg-gray-300 text-black px-2 py-1 rounded hover:bg-gray-400 transition"
-                    >
-                      +
-                    </button>
-                  </div>
+              </div>
+              <div className="ml-6 flex-1">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {item.title}
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">${item.price}</p>
+                <div className="mt-4 flex items-center">
+                  <button
+                    onClick={() =>
+                      handleQuantityChange(item.id, item.quantity - 1)
+                    }
+                    className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200"
+                  >
+                    -
+                  </button>
+                  <span className="mx-4 text-gray-600">{item.quantity}</span>
+                  <button
+                    onClick={() =>
+                      handleQuantityChange(item.id, item.quantity + 1)
+                    }
+                    className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200"
+                  >
+                    +
+                  </button>
                 </div>
-
+              </div>
+              <div className="ml-6">
+                <p className="text-lg font-medium text-gray-900">
+                  ${(item.price * item.quantity).toFixed(2)}
+                </p>
                 <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                  onClick={() => handleRemoveItem(item.id)}
+                  className="mt-2 text-sm text-red-500 hover:text-red-600"
                 >
                   Remove
                 </button>
               </div>
-            ))}
-
-            <p className="font-bold text-lg mt-4">Total: ${total.toFixed(2)}</p>
-            <button
-              onClick={() => {
-                buyCart();
-                alert("Your purchase is successful");
-                router.push("/");
-              }}
-              className="mt-4 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 transition ml-4"
-            >
-              Purchase Now
-            </button>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex justify-between items-center">
+          <div className="text-lg">
+            Total: <span className="font-bold">${total.toFixed(2)}</span>
           </div>
-        )}
-      </main>
+          <button
+            onClick={handlePurchase}
+            disabled={isProcessing}
+            className="bg-gray-900 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+          >
+            {isProcessing ? "Processing..." : "Purchase"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

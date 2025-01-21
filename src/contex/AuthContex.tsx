@@ -1,25 +1,22 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import axiosInstance from "@/utils/axiosInstance";
 import Cookies from "js-cookie";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  isLoading: boolean;
   user: any | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
-  // Check authentication status on mount
   useEffect(() => {
     const token = Cookies.get("token");
     if (token) {
@@ -45,30 +42,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const response = await axiosInstance.post("/auth/login", {
         email,
         password,
       });
-      const { access_token } = response.data;
 
-      // Set token in cookie with httpOnly flag
+      const { access_token } = response.data;
+      if (!access_token) {
+        throw new Error("Login failed: No access token received");
+      }
+
       Cookies.set("token", access_token, {
-        expires: 7, // 7 days
+        expires: 7,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       });
 
-      // Set axios default header
       axiosInstance.defaults.headers.common[
         "Authorization"
       ] = `Bearer ${access_token}`;
-
       setIsAuthenticated(true);
       await fetchUserData(access_token);
+      return true;
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Login failed");
+      const errorMessage =
+        error.response?.data?.message || error.message || "Login failed";
+      throw new Error(errorMessage);
     }
   };
 
@@ -88,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
 export function useAuth() {
   const context = useContext(AuthContext);

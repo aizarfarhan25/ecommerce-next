@@ -52,6 +52,7 @@ const ProductDetail = () => {
         price: product.price,
         image: product.images[0],
         quantity: quantity,
+        category: product.category,
       };
       addToCart(cartItem, quantity);
       toast.success("Product added to cart");
