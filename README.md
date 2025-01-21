@@ -6,7 +6,7 @@
 GegeShop is a e-commerce website application built with Next.js. This project was created to fulfill the RevoU Module 5 assignment requirements.
 
 ## Live Demo
-🌐 [Visit GegeShop](https://gegeshop.netlify.app/)
+🌐 [Visit GegeShop](https://gegeshop.vercel.app/)
 
 ## Key Features 
 ### User Authentication
