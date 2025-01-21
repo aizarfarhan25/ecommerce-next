@@ -20,8 +20,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const token = Cookies.get("token");
     if (token) {
-      setIsAuthenticated(true);
-      fetchUserData(token);
+      const setupAuth = async () => {
+        try {
+          axiosInstance.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${token}`;
+
+          await axiosInstance.get("/auth/profile");
+
+          setIsAuthenticated(true);
+          await fetchUserData(token);
+        } catch (error) {
+          console.error("Token validation failed:", error);
+          handleLogout();
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      setupAuth();
     } else {
       setLoading(false);
     }
@@ -58,6 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         expires: 7,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
+        path: "/",
       });
 
       axiosInstance.defaults.headers.common[
@@ -67,6 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await fetchUserData(access_token);
       return true;
     } catch (error: any) {
+      console.error("Login error details:", error);
       const errorMessage =
         error.response?.data?.message || error.message || "Login failed";
       throw new Error(errorMessage);

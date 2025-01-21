@@ -48,6 +48,10 @@ const CartPage = () => {
     return <div>Loading...</div>;
   }
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
