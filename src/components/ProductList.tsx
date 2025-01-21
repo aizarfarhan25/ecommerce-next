@@ -33,13 +33,16 @@ const ProductList: React.FC<Props> = ({ products }) => {
       return;
     }
 
-    addToCart({
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      image: product.images[0],
-      quantity: 1,
-    });
+    addToCart(
+      {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.images[0],
+        category: product.category,
+      },
+      1
+    );
     toast.success("Product added to cart");
   };
 

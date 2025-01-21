@@ -46,13 +46,26 @@ describe("useCart", () => {
     const { result } = renderHook(() => useCart(), { wrapper });
 
     act(() => {
-      result.current.addToCart(mockProduct);
+      result.current.addToCart(
+        {
+          id: mockProduct.id,
+          title: mockProduct.title,
+          price: mockProduct.price,
+          image: mockProduct.images[0],
+          category: mockProduct.category,
+        },
+        1
+      );
     });
 
     expect(result.current.cart).toHaveLength(1);
     expect(result.current.cart[0]).toEqual({
-      ...mockProduct,
+      id: mockProduct.id,
+      title: mockProduct.title,
+      price: mockProduct.price,
+      image: mockProduct.images[0],
       quantity: 1,
+      category: mockProduct.category,
     });
     expect(result.current.total).toBe(100);
   });
@@ -61,7 +74,16 @@ describe("useCart", () => {
     const { result } = renderHook(() => useCart(), { wrapper });
 
     act(() => {
-      result.current.addToCart(mockProduct);
+      result.current.addToCart(
+        {
+          id: mockProduct.id,
+          title: mockProduct.title,
+          price: mockProduct.price,
+          image: mockProduct.images[0],
+          category: mockProduct.category,
+        },
+        1
+      );
       result.current.setQuantity(mockProduct.id, 2);
     });
 
@@ -73,7 +95,16 @@ describe("useCart", () => {
     const { result } = renderHook(() => useCart(), { wrapper });
 
     act(() => {
-      result.current.addToCart(mockProduct);
+      result.current.addToCart(
+        {
+          id: mockProduct.id,
+          title: mockProduct.title,
+          price: mockProduct.price,
+          image: mockProduct.images[0],
+          category: mockProduct.category,
+        },
+        1
+      );
       result.current.removeFromCart(mockProduct.id);
     });
 
