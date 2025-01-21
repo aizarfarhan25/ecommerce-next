@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import ProductList from "@/components/ProductList";
 import { useAuth } from "@/contex/AuthContex";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import { CartProvider } from "@/contex/CartContex";
 
 // Mock dependencies
