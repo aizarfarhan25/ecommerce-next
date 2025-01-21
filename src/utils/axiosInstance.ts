@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Penting untuk mengirim cookies
 });
 
 // Request interceptor
@@ -28,7 +29,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Handle token expiration
+      // Token expired or invalid
       Cookies.remove("token");
       // window.location.href = "/login";
     }

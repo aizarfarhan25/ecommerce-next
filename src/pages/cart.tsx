@@ -39,10 +39,13 @@ const CartPage = () => {
   };
 
   useEffect(() => {
+    console.log("Cart page auth state:", { isAuthenticated, isLoading }); // Debugging
+
     if (!isLoading && !isAuthenticated) {
+      console.log("Redirecting to login from cart"); // Debugging
       router.push("/login");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
     return <div>Loading...</div>;
