@@ -10,7 +10,24 @@ jest.mock("@/contex/AuthContex");
 jest.mock("next/router", () => ({
   useRouter: jest.fn(),
 }));
-jest.mock("react-toastify");
+
+// Perbaikan mock untuk toast
+const mockToastSuccess = jest.fn();
+jest.mock("react-toastify", () => ({
+  toast: {
+    success: jest.fn().mockImplementation((...args) => mockToastSuccess(...args)),
+    error: jest.fn()
+  }
+}));
+
+// Mock CartContext
+const mockAddToCart = jest.fn();
+jest.mock("@/contex/CartContex", () => ({
+  useCart: () => ({
+    addToCart: mockAddToCart
+  }),
+  CartProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 // Buat wrapper component
 const renderWithProviders = (ui: React.ReactElement) => {
@@ -70,5 +87,65 @@ describe("ProductList", () => {
 
     // Cek redirect ke login kalau semisal usernya belom login
     expect(mockRouter.push).toHaveBeenCalledWith("/login");
+  });
+
+  it("should add product to cart when user is authenticated", () => {
+    // Mock authenticated user
+    (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
+
+    renderWithProviders(<ProductList products={mockProducts} />);
+
+    // Click add to cart button
+    fireEvent.click(screen.getByText("Add to Cart"));
+
+    // Verify addToCart was called with correct arguments
+    expect(mockAddToCart).toHaveBeenCalledWith(
+      {
+        id: mockProducts[0].id,
+        title: mockProducts[0].title,
+        price: mockProducts[0].price,
+        image: mockProducts[0].images[0],
+        category: mockProducts[0].category,
+      },
+      1
+    );
+  });
+
+  it("should show success toast when product is added to cart", () => {
+    // Mock authenticated user
+    (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
+
+    renderWithProviders(<ProductList products={mockProducts} />);
+
+    // Click add to cart button
+    fireEvent.click(screen.getByText("Add to Cart"));
+
+    // Verify success toast was shown
+    expect(mockToastSuccess).toHaveBeenCalledWith("Product added to cart");
+  });
+
+  it("should navigate to product detail page when clicking on product", () => {
+    (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
+
+    renderWithProviders(<ProductList products={mockProducts} />);
+
+    // Find and click the product link
+    const productLink = screen.getByRole("link");
+    expect(productLink).toHaveAttribute("href", "/product/1");
+  });
+
+  it("should render placeholder image when product image is not available", () => {
+    const productsWithoutImage = [{
+      ...mockProducts[0],
+      images: []
+    }];
+    
+    (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
+
+    renderWithProviders(<ProductList products={productsWithoutImage} />);
+
+    // Check if placeholder image is rendered
+    const img = screen.getByRole("img");
+    expect(img).toHaveAttribute("src", "/placeholder.svg");
   });
 });
