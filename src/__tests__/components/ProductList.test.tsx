@@ -5,13 +5,11 @@ import { useRouter } from "next/router";
 // import { toast } from "react-toastify";
 import { CartProvider } from "@/contex/CartContex";
 
-// Mock dependencies
 jest.mock("@/contex/AuthContex");
 jest.mock("next/router", () => ({
   useRouter: jest.fn(),
 }));
 
-// Perbaikan mock untuk toast
 const mockToastSuccess = jest.fn();
 jest.mock("react-toastify", () => ({
   toast: {
@@ -20,7 +18,6 @@ jest.mock("react-toastify", () => ({
   }
 }));
 
-// Mock CartContext
 const mockAddToCart = jest.fn();
 jest.mock("@/contex/CartContex", () => ({
   useCart: () => ({
@@ -29,7 +26,6 @@ jest.mock("@/contex/CartContex", () => ({
   CartProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Buat wrapper component
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(<CartProvider>{ui}</CartProvider>);
 };
@@ -55,50 +51,44 @@ describe("ProductList", () => {
   });
 
   it("should render products correctly", () => {
-    // Mock authenticated user
     (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
 
     renderWithProviders(<ProductList products={mockProducts} />);
 
-    // Cek apakah produk ditampilkan
+    // cek produk sudah tampil atau belum
     expect(screen.getByText("Test Product")).toBeInTheDocument();
     expect(screen.getByText("$100.00")).toBeInTheDocument();
     expect(screen.getByText("Test Category")).toBeInTheDocument();
   });
 
   it("should show login button when user is not authenticated", () => {
-    // Mock unauthenticated user
     (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: false });
 
     renderWithProviders(<ProductList products={mockProducts} />);
 
-    // Cek tombol login
+    // cek tombol login
     expect(screen.getByText("Login to Add")).toBeInTheDocument();
   });
 
   it("should redirect to login page when add to cart clicked while not authenticated", () => {
-    // Mock unauthenticated user
     (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: false });
 
     renderWithProviders(<ProductList products={mockProducts} />);
 
-    // Klik tombol add to cart
+    // klik tombol add to cart
     fireEvent.click(screen.getByText("Login to Add"));
 
-    // Cek redirect ke login kalau semisal usernya belom login
+    // cek redirect ke login kalau semisal usernya belom login
     expect(mockRouter.push).toHaveBeenCalledWith("/login");
   });
 
   it("should add product to cart when user is authenticated", () => {
-    // Mock authenticated user
     (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
 
     renderWithProviders(<ProductList products={mockProducts} />);
 
-    // Click add to cart button
     fireEvent.click(screen.getByText("Add to Cart"));
 
-    // Verify addToCart was called with correct arguments
     expect(mockAddToCart).toHaveBeenCalledWith(
       {
         id: mockProducts[0].id,
@@ -112,15 +102,13 @@ describe("ProductList", () => {
   });
 
   it("should show success toast when product is added to cart", () => {
-    // Mock authenticated user
+
     (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
 
     renderWithProviders(<ProductList products={mockProducts} />);
 
-    // Click add to cart button
     fireEvent.click(screen.getByText("Add to Cart"));
 
-    // Verify success toast was shown
     expect(mockToastSuccess).toHaveBeenCalledWith("Product added to cart");
   });
 
@@ -129,7 +117,6 @@ describe("ProductList", () => {
 
     renderWithProviders(<ProductList products={mockProducts} />);
 
-    // Find and click the product link
     const productLink = screen.getByRole("link");
     expect(productLink).toHaveAttribute("href", "/product/1");
   });
@@ -144,7 +131,6 @@ describe("ProductList", () => {
 
     renderWithProviders(<ProductList products={productsWithoutImage} />);
 
-    // Check if placeholder image is rendered
     const img = screen.getByRole("img");
     expect(img).toHaveAttribute("src", "/placeholder.svg");
   });

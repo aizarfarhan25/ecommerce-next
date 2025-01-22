@@ -2,7 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { useProduct } from "@/hooks/useProduct";
 import useSWR from "swr";
 
-// Mock SWR ini supaya tidak melakukan request asli
+// mock swr ini supaya tidak melakukan request asli
 jest.mock("swr");
 
 describe("useProduct", () => {
@@ -11,7 +11,6 @@ describe("useProduct", () => {
   });
 
   it("should fetch single product successfully", () => {
-    // Mock data produk tunggal
     const mockProduct = {
       id: 1,
       title: "Test Product",
@@ -21,32 +20,29 @@ describe("useProduct", () => {
       category: { id: 1, name: "Test Category" },
     };
 
-    // Mock response SWR untuk sukses
+    // mock response SWR untuk sukses
     (useSWR as jest.Mock).mockReturnValue({
       data: mockProduct,
       error: undefined,
       isLoading: false,
     });
 
-    // Render hook berdasarkan ID dari productnya
+    // render hook berdasarkan id dari productnya
     const { result } = renderHook(() => useProduct("1"));
 
-    // Cek hasilnya
+    // cek hasilnya
     expect(result.current.product).toEqual(mockProduct);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isError).toBeUndefined();
   });
 
   it("should return null when no product id provided", () => {
-    // Render hook tanpa ID
+    // render hook tdk pake ID
     const { result } = renderHook(() => useProduct(""));
-
-    // Harusnya tidak memanggil SWR
     expect(useSWR).toHaveBeenCalledWith(null, expect.any(Function));
   });
 
   it("should handle loading state", () => {
-    // Mock loading state
     (useSWR as jest.Mock).mockReturnValue({
       data: undefined,
       error: undefined,
@@ -62,7 +58,6 @@ describe("useProduct", () => {
   it("should handle error state", () => {
     const error = new Error("Failed to fetch product");
 
-    // Mock error state
     (useSWR as jest.Mock).mockReturnValue({
       data: undefined,
       error,

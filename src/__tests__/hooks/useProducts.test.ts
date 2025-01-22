@@ -2,7 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { useProducts } from "@/hooks/useProducts";
 import useSWR from "swr";
 
-// Mock SWR ini supaya tidak melakukan request asli
+// mock swr ini supaya tidak melakukan request asli
 jest.mock("swr");
 
 describe("useProducts", () => {

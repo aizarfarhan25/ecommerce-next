@@ -9,7 +9,6 @@ jest.mock("next/router", () => ({
   }),
 }));
 
-// Mock localStorage
 const localStorageMock = {
   getItem: jest.fn(() => null),
   setItem: jest.fn(),

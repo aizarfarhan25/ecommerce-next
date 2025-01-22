@@ -113,7 +113,7 @@ const SignUpPage = () => {
     }
 
     if (!email.includes("@")) {
-      setError("Please enter a valid email address");
+      setError("Please provide valid email and password");
       return;
     }
 

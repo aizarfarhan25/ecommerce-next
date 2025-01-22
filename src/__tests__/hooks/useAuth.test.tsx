@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import Cookies from "js-cookie";
 import axiosInstance from "@/utils/axiosInstance";
 
-// Mock dependencies
 jest.mock("next/router", () => ({
   useRouter: jest.fn(),
 }));
@@ -53,9 +52,8 @@ describe("useAuth", () => {
       },
     };
 
-    // Mock successful login
+    // mock login berhasil
     (axiosInstance.post as jest.Mock).mockResolvedValueOnce(mockResponse);
-    // Mock successful profile fetch
     (axiosInstance.get as jest.Mock).mockResolvedValueOnce({
       data: { id: 1, name: "Test User" },
     });
@@ -88,7 +86,7 @@ describe("useAuth", () => {
   });
 
   it("should handle login error", async () => {
-    // Mock failed login
+    // mock login gagal
     (axiosInstance.post as jest.Mock).mockRejectedValueOnce({
       response: { data: { message: "Invalid credentials" } },
     });
