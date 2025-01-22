@@ -2,9 +2,14 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import Cookies from "js-cookie";
 
+interface User {
+  name: string;
+  // tambah field lain yang diperlukan
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any | null;
+  user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
@@ -14,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
