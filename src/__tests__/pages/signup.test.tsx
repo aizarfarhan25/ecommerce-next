@@ -95,7 +95,7 @@ describe("SignUp Page", () => {
       expect(screen.getByText(/password must contain at least one uppercase letter/i)).toBeInTheDocument();
     });
 
-    // test input pass tanpa nomor
+    // Test number requirement
     fireEvent.change(screen.getByLabelText(/password/i), {
       target: { value: "PasswordTest" }
     });
@@ -106,7 +106,9 @@ describe("SignUp Page", () => {
   });
 
   it("should handle successful registration", async () => {
-    (axiosInstance.post as jest.Mock).mockResolvedValueOnce({ data: { id: 1 } });
+    (axiosInstance.post as jest.Mock).mockResolvedValueOnce({
+      data: { id: 1 }
+    });
 
     render(<SignUp />);
 
@@ -127,7 +129,7 @@ describe("SignUp Page", () => {
         name: "Test User",
         email: "test@example.com",
         password: "Password123",
-        avatar: "https://picsum.photos/800"
+        avatar: "https://api.lorem.space/image/face?w=150&h=150"
       });
       expect(mockPush).toHaveBeenCalledWith("/login");
     });

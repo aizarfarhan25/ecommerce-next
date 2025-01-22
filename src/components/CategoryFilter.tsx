@@ -42,7 +42,7 @@ const CategoryFilter: React.FC<Props> = ({
   };
 
   return (
-    <div className="p-6 lg:p-0">
+    <div className="sticky top-16 bg-white z-40">
       <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden transition-transform duration-300 transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
@@ -50,7 +50,7 @@ const CategoryFilter: React.FC<Props> = ({
         onClick={() => setIsSidebarOpen(false)}
       ></div>
 
-      <div className="w-full shadow-md border-gray-600 lg:shadow-none lg:border-none rounded-lg px-4 py-2">
+      <div className="w-full shadow-sm border-gray-100 rounded-lg p-4">
         <div className="flex justify-between items-center mb-4 lg:hidden">
           <div className="flex items-center gap-1">
             <BiCategory size={20} />
@@ -65,23 +65,27 @@ const CategoryFilter: React.FC<Props> = ({
         </div>
 
         <div
-          className={`fixed top-0 left-0 h-full bg-white w-64 p-4 shadow-md transform transition-transform duration-300 lg:hidden z-50 ${
+          className={`fixed top-16 left-0 h-[calc(100%-4rem)] bg-white w-64 transform transition-transform duration-300 lg:hidden z-[60] ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="text-xl text-gray-600 mb-4"
-          >
-            Close
-          </button>
-          <div className="flex flex-col space-y-2">
+          <div className="bg-white p-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Categories</h2>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="text-gray-600 hover:text-gray-900 focus:outline-none"
+            >
+              Close
+            </button>
+          </div>
+          
+          <div className="p-4 pt-2 overflow-y-auto h-full">
             <button
               onClick={() => handleCategorySelect(null)}
-              className={`px-4 py-2 text-left ${
+              className={`w-full px-4 py-2 text-left ${
                 selectedCategory === null
                   ? "text-black font-bold border-l-4 border-black"
-                  : "text-gray-700 hover:bg-gray-200 hover:border-l-4 hover:border-black"
+                  : "text-gray-700 hover:bg-gray-100 border-l-4 border-transparent hover:border-black"
               } transition-all duration-200`}
             >
               All
@@ -90,10 +94,10 @@ const CategoryFilter: React.FC<Props> = ({
               <button
                 key={category.id}
                 onClick={() => handleCategorySelect(category.id)}
-                className={`px-4 py-2 text-left ${
+                className={`w-full px-4 py-2 text-left ${
                   selectedCategory === category.id
                     ? "text-black font-bold border-l-4 border-black"
-                    : "text-gray-700 hover:bg-gray-200 hover:border-l-4 hover:border-black"
+                    : "text-gray-700 hover:bg-gray-100 border-l-4 border-transparent hover:border-black"
                 } transition-all duration-200`}
               >
                 {cleanCategoryName(category.name)}

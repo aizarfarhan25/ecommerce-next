@@ -22,7 +22,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="sticky top-0 bg-white shadow-sm z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <span className="text-2xl font-bold text-black">GegeShop</span>

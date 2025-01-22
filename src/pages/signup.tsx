@@ -54,10 +54,6 @@ const signUpService = {
       return "Password must contain at least one number";
     }
 
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      return "Password must contain at least one special character";
-    }
-
     return null;
   },
 
@@ -88,23 +84,7 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const validatePassword = (password: string): string | null => {
-    if (password.length < 8) {
-      return "Password must be at least 8 characters long";
-    }
-    if (!/[A-Z]/.test(password)) {
-      return "Password must contain at least one uppercase letter";
-    }
-    if (!/[0-9]/.test(password)) {
-      return "Password must contain at least one number";
-    }
-    // if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    //   return "Password must contain at least one special character";
-    // }
-    return null;
-  };
-
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name || !email || !password) {
@@ -117,44 +97,38 @@ const SignUpPage = () => {
       return;
     }
 
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
       return;
     }
 
-    setLoading(true);
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter");
+      return;
+    }
+
+    if (!/\d/.test(password)) {
+      setError("Password must contain at least one number");
+      return;
+    }
 
     try {
-      const userData = {
+      const response = await axiosInstance.post("/users", {
         name,
         email,
         password,
-        avatar: "https://picsum.photos/800",
-      };
-
-      const response = await axiosInstance.post("/users", userData);
+        avatar: "https://api.lorem.space/image/face?w=150&h=150"
+      });
 
       if (response.data) {
         router.push("/login");
       }
     } catch (error: any) {
-      console.error("Signup error:", error.response);
-
-      if (error.response?.status === 400) {
-        setError(
-          error.response.data.message ||
-            "Invalid data provided. Please check your information"
-        );
-      } else if (error.response?.status === 409) {
-        setError("Email is already registered");
-      } else if (error.response?.data?.message) {
+      if (error.response) {
         setError(error.response.data.message);
       } else {
-        setError("Registration failed. Please try again");
+        setError("An error occurred during registration");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -184,7 +158,7 @@ const SignUpPage = () => {
       <Header />
       <main className="flex flex-1 items-center justify-center p-4">
         <form
-          onSubmit={handleSignUp}
+          onSubmit={handleSubmit}
           className="bg-white p-8 shadow-lg rounded-md w-full max-w-md"
         >
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">

@@ -75,50 +75,43 @@ const CartPage = () => {
         <h1 className="text-2xl font-bold mb-8">Shopping Cart</h1>
         <div className="bg-white shadow-sm rounded-lg divide-y divide-gray-200">
           {cart.map((item) => (
-            <div key={item.id} className="p-6 flex items-center">
-              <div className="flex-shrink-0 w-24 h-24 bg-gray-100 rounded-md overflow-hidden">
+            <div key={item.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center">
+              <div className="flex-shrink-0 w-full sm:w-40 rounded-2xl overflow-hidden mb-4 sm:mb-0 bg-white shadow-sm">
                 <img
                   src={item.image || "/placeholder-image.jpg"}
                   alt={item.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full aspect-square object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "/placeholder-image.jpg";
+                    (e.target as HTMLImageElement).src = "/placeholder-image.jpg";
                   }}
                 />
               </div>
-              <div className="ml-6 flex-1">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {item.title}
-                </h3>
+              <div className="flex-1 sm:ml-6">
+                <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
                 <p className="mt-1 text-sm text-gray-500">${item.price}</p>
                 <div className="mt-4 flex items-center">
                   <button
-                    onClick={() =>
-                      handleQuantityChange(item.id, item.quantity - 1)
-                    }
+                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                     className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200"
                   >
                     -
                   </button>
                   <span className="mx-4 text-gray-600">{item.quantity}</span>
                   <button
-                    onClick={() =>
-                      handleQuantityChange(item.id, item.quantity + 1)
-                    }
+                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                     className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200"
                   >
                     +
                   </button>
                 </div>
               </div>
-              <div className="ml-6">
+              <div className="mt-4 sm:mt-0 sm:ml-6 flex flex-row sm:flex-col justify-between items-center sm:items-end">
                 <p className="text-lg font-medium text-gray-900">
                   ${(item.price * item.quantity).toFixed(2)}
                 </p>
                 <button
                   onClick={() => handleRemoveItem(item.id)}
-                  className="mt-2 text-sm text-red-500 hover:text-red-600"
+                  className="text-sm text-red-500 hover:text-red-600"
                 >
                   Remove
                 </button>
@@ -126,14 +119,14 @@ const CartPage = () => {
             </div>
           ))}
         </div>
-        <div className="mt-8 flex justify-between items-center">
+        <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-lg">
             Total: <span className="font-bold">${total.toFixed(2)}</span>
           </div>
           <button
             onClick={handlePurchase}
             disabled={isProcessing}
-            className="bg-gray-900 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+            className="w-full sm:w-auto bg-gray-900 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
           >
             {isProcessing ? "Processing..." : "Purchase"}
           </button>
