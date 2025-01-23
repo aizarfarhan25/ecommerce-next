@@ -87,31 +87,13 @@ const SignUpPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !email || !password) {
-      setError("All fields are required");
+    const validationError = signUpService.validateInputs(name, email, password);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    if (!email.includes("@")) {
-      setError("Please provide valid email and password");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      setError("Password must contain at least one uppercase letter");
-      return;
-    }
-
-    if (!/\d/.test(password)) {
-      setError("Password must contain at least one number");
-      return;
-    }
-
+    setLoading(true);
     try {
       const response = await axiosInstance.post("/users", {
         name,
@@ -129,6 +111,8 @@ const SignUpPage = () => {
       } else {
         setError("An error occurred during registration");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
