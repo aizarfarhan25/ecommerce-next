@@ -142,6 +142,7 @@ const SignUpPage = () => {
       <Header />
       <main className="flex flex-1 items-center justify-center p-4">
         <form
+          noValidate
           onSubmit={handleSubmit}
           className="bg-white p-8 shadow-lg rounded-md w-full max-w-md"
         >

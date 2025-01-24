@@ -64,7 +64,7 @@ describe("SignUp Page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
-    expect(screen.getByText("Please provide valid email and password")).toBeInTheDocument();
+    expect(screen.getByText("Please enter a valid email address")).toBeInTheDocument();
   });
 
   it("should validate password requirements", async () => {
