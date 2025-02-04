@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProductList from "@/components/ProductList";
@@ -39,6 +39,19 @@ const HomePage = ({ initialCategories }: { initialCategories: Category[] }) => {
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
   };
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://embed.tawk.to/67a203eb825083258e0fe388/1ij8duki5";
+    script.async = true;
+    script.charset = "UTF-8";
+    script.setAttribute("crossorigin", "*");
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (isLoading) {
     return (
