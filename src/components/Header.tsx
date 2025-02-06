@@ -31,6 +31,7 @@ const Header = () => {
 
         {/* Mobile menu button */}
         <button
+          data-testid="menu-toggle-button"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="md:hidden p-2"
         >
@@ -98,6 +99,7 @@ const Header = () => {
 
         {/* Mobile navigation */}
         <div
+          data-testid="mobile-menu"
           className={`${
             isMenuOpen ? "flex" : "hidden"
           } md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg flex-col items-center py-4 space-y-4`}
@@ -117,7 +119,9 @@ const Header = () => {
                 <FaShoppingCart size={20} />
                 <span className="ml-2">Cart</span>
                 {cartItemsCount > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                  <span 
+                    className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1"
+                  >
                     {cartItemsCount}
                   </span>
                 )}

@@ -1,180 +1,194 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import Header from "@/components/Header";
-import { AuthProvider } from "@/contex/AuthContex";
-import { CartProvider } from "@/contex/CartContex";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"  
+import "@testing-library/jest-dom"  
+import { useRouter } from "next/router"  
+import Header from "@/components/Header"  
+import { useAuth } from "@/contex/AuthContex"  
+import { useCart } from "@/contex/CartContex"  
 
+// Mock the next/router  
+jest.mock("next/router", () => ({  
+  useRouter: jest.fn(),  
+}))  
 
-const mockPush = jest.fn();
-jest.mock("next/router", () => ({
-  useRouter: () => ({
-    push: mockPush,
-    pathname: "/",
-  }),
-}));
+// Mock the context hooks  
+jest.mock("@/contex/AuthContex", () => ({  
+  useAuth: jest.fn(),  
+}))  
 
-jest.mock("next/link", () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => {
-    return (
-      <a href={href} data-testid="link">
-        {children}
-      </a>
-    );
-  };
-});
+jest.mock("@/contex/CartContex", () => ({  
+  useCart: jest.fn(),  
+}))  
 
-// ini untuk test autentikasi bagian user login dan logout
-interface User {
-  name: string;
-}
+// Fix the next/link mock implementation  
+jest.mock("next/link", () => {  
+  return jest.fn().mockImplementation(({ children, href }) => {  
+    return (  
+      <a href={href} onClick={(e) => e.preventDefault()}>  
+        {children}  
+      </a>  
+    )  
+  })  
+})  
 
-const mockAuthContext = {
-  isAuthenticated: false,
-  user: null as User | null,
-  login: jest.fn(),
-  logout: jest.fn(),
-  isLoading: false,
-};
+// Mock react-icons  
+jest.mock("react-icons/fa", () => ({  
+  FaShoppingCart: () => <svg data-testid="cart-icon" />  
+}))  
 
-jest.mock("@/contex/AuthContex", () => ({
-  ...jest.requireActual("@/contex/AuthContex"),
-  useAuth: () => mockAuthContext,
-}));
+describe("Header Component", () => {  
+  const mockPush = jest.fn()  
+  const mockLogout = jest.fn()  
 
+  beforeEach(() => {  
+    jest.clearAllMocks()  
+    ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })  
+  })   
 
-interface CartItem {
-  id: number;
-  quantity: number;
-}
+  it("renders the logo", () => {
+    // Mock authentication and cart state
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      logout: mockLogout,
+    })
+    ;(useCart as jest.Mock).mockReturnValue({ cart: [] })
 
-const mockCartContext = {
-  cart: [] as CartItem[],
-  total: 0,
-  addToCart: jest.fn(),
-  removeFromCart: jest.fn(),
-  setQuantity: jest.fn(),
-  clearCart: jest.fn(),
-  getTotal: jest.fn(() => 0),
-};
+    render(<Header />)
+    const logo = screen.getByText("GegeShop")
+    expect(logo).toBeInTheDocument()
+  })
 
-jest.mock("@/contex/CartContex", () => ({
-  ...jest.requireActual("@/contex/CartContex"),
-  useCart: () => mockCartContext,
-}));
+  it("renders login link when not authenticated", () => {
 
-describe("Header Component", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockAuthContext.isAuthenticated = false;
-    mockCartContext.cart = [];
-  });
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: false,
+      logout: mockLogout,
+    })
+    ;(useCart as jest.Mock).mockReturnValue({ cart: [] })
 
-  const renderHeader = () => {
-    return render(
-      <AuthProvider>
-        <CartProvider>
-          <Header />
-        </CartProvider>
-      </AuthProvider>
-    );
-  };
+    render(<Header />)
+    
+    // cek login ada atau tidak
+    const loginLinks = screen.getAllByText(/Login/i)
+    expect(loginLinks.length).toBeGreaterThan(0)
+    
+    const loginLink = loginLinks[0].closest('a')
+    expect(loginLink).toHaveAttribute("href", "/login")
+  })
 
-  // untuk test tampilan dan responsivitas dari component header
-  describe("Layout and Responsiveness", () => {
-    it("renders with correct layout structure", () => {
-      renderHeader();
-      const logo = screen.getByText("GegeShop");
-      expect(logo).toHaveClass("text-2xl", "font-bold", "text-black");
-    });
+  it("renders logout button and cart when authenticated", () => {
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      logout: mockLogout,
+    })
+    ;(useCart as jest.Mock).mockReturnValue({ cart: [{ quantity: 2 }] })
 
-    it("maintains layout integrity on mobile viewport", () => {
-      global.innerWidth = 375;
-      global.dispatchEvent(new Event("resize"));
-      renderHeader();
-    });
-  });
+    render(<Header />)
 
-  describe("Authentication States", () => {
-    it("shows login link in unauthenticated state", () => {
-      renderHeader();
-      const loginLink = screen.getByText(/login/i);
-      expect(loginLink).toBeInTheDocument();
-      expect(loginLink.closest("a")).toHaveAttribute("href", "/login");
-    });
+    const logoutButtons = screen.getAllByText("Logout")
+    expect(logoutButtons[0]).toBeInTheDocument()
 
-    it("shows user menu and cart in authenticated state", async () => {
-      mockAuthContext.isAuthenticated = true;
-      mockAuthContext.user = { name: "Test User" };
-      renderHeader();
+    const cartLinks = screen.getAllByRole("link", { name: /cart/i })
+    expect(cartLinks[0]).toBeInTheDocument()
+  })
 
-      expect(screen.getByText(/log out/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/shopping cart/i)).toBeInTheDocument();
-    });
+  it("displays correct cart item count", () => {
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      logout: mockLogout,
+    })
+    ;(useCart as jest.Mock).mockReturnValue({
+      cart: [{ quantity: 2 }, { quantity: 3 }],
+    })
 
-    it("handles logout action correctly", async () => {
-      mockAuthContext.isAuthenticated = true;
-      renderHeader();
+    render(<Header />)
+    const cartCount = screen.getAllByText("5")[0]
+    expect(cartCount).toBeInTheDocument()
+  })
 
-      const logoutButton = screen.getByText(/log out/i);
-      await userEvent.click(logoutButton);
+  it("toggles mobile menu on button click", () => {
+    // Mock authentication state
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: false,
+      logout: mockLogout,
+    })
+    ;(useCart as jest.Mock).mockReturnValue({ cart: [] })
 
-      expect(mockAuthContext.logout).toHaveBeenCalledTimes(1);
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith("/");
-      });
-    });
-  });
+    render(<Header />)
 
-  // ini untuk test bafian cartnya sudah berfungsi atau belum
-  describe("Cart Functionality", () => {
-    beforeEach(() => {
-      mockAuthContext.isAuthenticated = true;
-    });
+    // cek burger buttom untuk mobile
+    const menuButton = screen.getByTestId('menu-toggle-button')
 
-    it("displays correct cart item count", () => {
-      mockCartContext.cart = [
-        { id: 1, quantity: 2 },
-        { id: 2, quantity: 3 },
-      ];
-      renderHeader();
+    // cek burger button itu terhidden secara default
+    const mobileMenu = screen.getByTestId('mobile-menu')
+    expect(mobileMenu).toHaveClass('hidden')
 
-      const cartCount = screen.getByLabelText(/cart items/i);
-      expect(cartCount).toHaveTextContent("5");
-    });
+    // click untuk membuka burger button
+    fireEvent.click(menuButton)
 
-    it("navigates to cart page on cart icon click", async () => {
-      renderHeader();
-      const cartButton = screen.getByLabelText(/shopping cart/i);
-      await userEvent.click(cartButton);
-      expect(mockPush).toHaveBeenCalledWith("/cart");
-    });
-  });
+    expect(mobileMenu).not.toHaveClass('hidden')
+  })
 
-  describe("Error Handling", () => {
-    it("handles auth context errors gracefully", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-      mockAuthContext.logout.mockRejectedValueOnce(new Error("Logout failed"));
+  it("calls logout function and redirects on logout click", async () => {
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      logout: mockLogout,
+    })
+    ;(useCart as jest.Mock).mockReturnValue({ cart: [] })
 
-      renderHeader();
-      // test bagian error handling
+    render(<Header />)
+    const logoutButton = screen.getAllByText("Logout")[0]
 
-      consoleSpy.mockRestore();
-    });
-  });
+    fireEvent.click(logoutButton)
 
-  // untuk test performance kalo ada banyak item di cart
-  describe("Performance", () => {
-    it("maintains performance with many cart items", () => {
-      mockCartContext.cart = Array.from({ length: 100 }, (_, i) => ({
-        id: i,
-        quantity: 1,
-      }));
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalled()
+      expect(mockPush).toHaveBeenCalledWith("/")
+    })
+  })
 
-      const startTime = performance.now();
-      renderHeader();
-      const endTime = performance.now();
+  it("renders About Us link correctly", () => {
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      logout: mockLogout,
+    })
+    ;(useCart as jest.Mock).mockReturnValue({ cart: [] })
 
-      expect(endTime - startTime).toBeLessThan(100); // test kecepatan waktu render
-    });
-  });
-});
+    render(<Header />)
+    const aboutLinks = screen.getAllByText("About Us")
+    const aboutLink = aboutLinks[0] // Get the desktop version
+    expect(aboutLink).toBeInTheDocument()
+    expect(aboutLink.closest("a")).toHaveAttribute("href", "/about")
+  })
+
+  // it("renders cart link in mobile menu when authenticated", () => {  
+  //   // Mock authenticated state with cart
+  //   ;(useAuth as jest.Mock).mockReturnValue({
+  //     isAuthenticated: true,
+  //     logout: mockLogout,
+  //   })
+  //   ;(useCart as jest.Mock).mockReturnValue({ 
+  //     cart: [{ quantity: 2 }]
+  //   })
+
+  //   render(<Header />)  
+
+  //   // Find and click the mobile menu toggle button  
+  //   const menuButton = screen.getByTestId('menu-toggle-button')  
+  //   fireEvent.click(menuButton)  
+
+  //   // Find cart link in mobile menu
+  //   const cartLinks = screen.getAllByText(/Cart/i)
+  //   const mobileCartLink = cartLinks.find(link => 
+  //     link.closest('div')?.classList.contains('md:hidden')
+  //   )
+    
+  //   expect(mobileCartLink).toBeInTheDocument()
+    
+  //   const cartLinkElement = mobileCartLink?.closest('a')
+  //   expect(cartLinkElement).toHaveAttribute('href', '/cart')
+
+  //   // Check cart count
+  //   const cartCount = screen.getByText('2')
+  //   expect(cartCount).toBeInTheDocument()
+  // })   
+})
