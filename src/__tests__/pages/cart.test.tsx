@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import Cart from "@/pages/cart";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contex/AuthContex";
@@ -128,21 +128,43 @@ describe("Cart Page", () => {
   });
 
   it("should handle purchase", async () => {
+    // Setup mocks
+    const mockCartFunctions = {
+      clearCart: jest.fn(),
+      cart: mockCartItems,
+      total: 199.98,
+      setQuantity: jest.fn(),
+      removeFromCart: jest.fn(),
+    };
+    (useCart as jest.Mock).mockReturnValue(mockCartFunctions);
+    
     jest.useFakeTimers();
+  
     render(<Cart />);
-
+  
+    // klik tombol "Purchase"
     const purchaseButton = screen.getByText("Purchase");
     fireEvent.click(purchaseButton);
-
+  
+    // tunggu proses purchase
     expect(screen.getByText("Processing...")).toBeInTheDocument();
-
-    jest.advanceTimersByTime(1500);
-
-    await waitFor(() => {
-      expect(mockCartFunctions.clearCart).toHaveBeenCalled();
-      expect(toast.success).toHaveBeenCalledWith("Your purchase is successful");
-      expect(mockRouter.push).toHaveBeenCalledWith("/");
+  
+    // untuk set waktu processing pembelian
+    await act(async () => {
+      jest.advanceTimersByTime(2000);
     });
+  
+    // cek modal (pop up)
+    const modalTitle = await screen.findByText("Purchase Successful");
+    expect(modalTitle).toBeInTheDocument();
+  
+    // Advance remaining timers
+    await act(async () => {
+      jest.advanceTimersByTime(3000);
+    });
+  
+    // pastikan cart sudah kosong setelah proses purchase berhasil
+    expect(mockCartFunctions.clearCart).toHaveBeenCalled();
 
     jest.useRealTimers();
   });

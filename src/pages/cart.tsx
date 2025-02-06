@@ -5,12 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import Header from "@/components/Header";
 import { toast } from "react-toastify";
+import { Button, Modal, Box, Typography } from "@mui/material";
 
 const CartPage = () => {
   const { cart, total, setQuantity, removeFromCart, clearCart } = useCart();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const handleQuantityChange = (productId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -23,19 +28,31 @@ const CartPage = () => {
   };
 
   const handlePurchase = async () => {
-    try {
-      setIsProcessing(true);
-      // Simulasi proses pembelian
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      clearCart(); // Kosongkan cart setelah pembelian berhasil
-      toast.success("Your purchase is successful");
-      router.push("/");
-    } catch (error) {
-      toast.error("Failed to process purchase");
-    } finally {
+    setIsProcessing(true);
+    // First show processing state
+    setTimeout(() => {
       setIsProcessing(false);
-    }
+      handleOpen();
+      setTimeout(() => {
+        clearCart();
+        setTimeout(() => {
+          handleClose();
+          // router.push("/");
+        },);
+      }, 3000);
+    },2000);
+  };
+
+  const style = {
+    position: "absolute" as "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
   };
 
   useEffect(() => {
@@ -75,30 +92,40 @@ const CartPage = () => {
         <h1 className="text-2xl font-bold mb-8">Shopping Cart</h1>
         <div className="bg-white shadow-sm rounded-lg divide-y divide-gray-200">
           {cart.map((item) => (
-            <div key={item.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center">
+            <div
+              key={item.id}
+              className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center"
+            >
               <div className="flex-shrink-0 w-full sm:w-40 rounded-2xl overflow-hidden mb-4 sm:mb-0 bg-white shadow-sm">
                 <img
                   src={item.image || "/placeholder-image.jpg"}
                   alt={item.title}
                   className="w-full h-full aspect-square object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/placeholder-image.jpg";
+                    (e.target as HTMLImageElement).src =
+                      "/placeholder-image.jpg";
                   }}
                 />
               </div>
               <div className="flex-1 sm:ml-6">
-                <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {item.title}
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">${item.price}</p>
                 <div className="mt-4 flex items-center">
                   <button
-                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                    onClick={() =>
+                      handleQuantityChange(item.id, item.quantity - 1)
+                    }
                     className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200"
                   >
                     -
                   </button>
                   <span className="mx-4 text-gray-600">{item.quantity}</span>
                   <button
-                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                    onClick={() =>
+                      handleQuantityChange(item.id, item.quantity + 1)
+                    }
                     className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200"
                   >
                     +
@@ -131,6 +158,42 @@ const CartPage = () => {
             {isProcessing ? "Processing..." : "Purchase"}
           </button>
         </div>
+
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+              borderRadius: "8px",
+            }}
+          >
+            <Typography
+              id="modal-modal-title"
+              variant="h6"
+              component="h2"
+              sx={{ textAlign: "center" }}
+            >
+              Purchase Successful
+            </Typography>
+            <Typography
+              id="modal-modal-description"
+              sx={{ mt: 2, textAlign: "center" }}
+            >
+              Thank you for your purchase! Your cart has been cleared.
+            </Typography>
+          </Box>
+        </Modal>
       </div>
     </div>
   );
