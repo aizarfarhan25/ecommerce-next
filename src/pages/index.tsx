@@ -33,8 +33,17 @@ export async function getServerSideProps() {
 const HomePage = ({ initialCategories }: { initialCategories: Category[] }) => {
   const [categories] = useState<Category[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(1000000); // Set default max price
 
-  const { products, isLoading } = useProducts(selectedCategory);
+  const { products = [], isLoading } = useProducts(selectedCategory);
+
+  const filteredProducts = products.filter(product => {
+    const isInPriceRange = product.price >= minPrice && product.price <= maxPrice;
+    const matchesSearchTerm = product.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return isInPriceRange && matchesSearchTerm;
+  });
 
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
@@ -92,8 +101,14 @@ const HomePage = ({ initialCategories }: { initialCategories: Category[] }) => {
           categories={categories}
           selectedCategory={selectedCategory}
           onCategorySelect={handleCategorySelect}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          minPrice={minPrice}
+          setMinPrice={setMinPrice}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
         />
-        <ProductList products={products || []} />
+        <ProductList products={filteredProducts || []} />
       </div>
       <Footer />
     </div>
