@@ -90,7 +90,7 @@ const Header = () => {
           ) : (
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              className="px-4 py-2 text-sm md:text-base font-medium text-gray-700 hover:text-gray-900"
             >
               Login
             </Link>
